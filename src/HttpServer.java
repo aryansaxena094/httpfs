@@ -10,9 +10,9 @@ public class HttpServer {
     private final Logger LOGGER = Logger.getLogger(HttpServer.class.getName());
 
     public HttpServer(ServerConfig config) {
-        LOGGER.setLevel(Level.WARNING);
         this.config = config;
         this.fileManager = new FileManager(config.getDirectory());
+        LOGGER.setLevel(Level.WARNING);
         if (config.isDebugging()) {
             LOGGER.setLevel(Level.FINE);
         }
@@ -25,12 +25,8 @@ public class HttpServer {
                 try {
                     Socket clientSocket = serverSocket.accept();
                     LOGGER.fine("New connection accepted");
-
-                    // Handle the client request in a separate thread or by a dedicated handler
-                    // For example:
-                    // Thread thread = new Thread(new ClientHandler(clientSocket, config));
-                    // thread.start();
-
+                    Thread thread = new Thread(new RequestHandler(clientSocket, fileManager, config.isDebugging()));
+                    thread.start();
                 } catch (Exception e) {
                     // This is where we handle client errors
                     LOGGER.severe("Error handling client connection: " + e.getMessage());

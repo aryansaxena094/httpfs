@@ -6,9 +6,7 @@ public class httpfs {
 
     public static void main(String[] args) {
         LOGGER.setLevel(Level.WARNING); // Default Level is WARNING, so we don't debug by default
-        // This is for testing
-        // Scanner sc = new Scanner(System.in);
-        // String line = sc.nextLine();
+
         String line = "-v -p 8080 -d thedirectorypath";
         String[] args2 = line.split(" ");
         try {
@@ -23,5 +21,4 @@ public class httpfs {
             LOGGER.severe("Error parsing arguments: " + e.getMessage());
         }
     }
-
 }
