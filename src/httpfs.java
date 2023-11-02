@@ -42,12 +42,23 @@ public class httpfs {
                     // For example:
                     // Thread thread = new Thread(new ClientHandler(clientSocket, config));
                     // thread.start();
+
+
+                    
                 } catch (Exception e) {
-                    // TODO: handle exception
+                    // This is where we handle client errors
+                    LOGGER.severe("Error handling client connection: " + e.getMessage());
+                    if(config.isDebugging()){
+                        e.printStackTrace();
+                    }
                 }
             }
         } catch (IOException e) {
+            // This is where we handle server errors
             LOGGER.severe("Error starting server: " + e.getMessage());
+            if (config.isDebugging()) {
+                e.printStackTrace();
+            }
         }
     }
 }
