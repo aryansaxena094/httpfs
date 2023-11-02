@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 public class FileManager {
     private final Path baseDirectory;
 
-    FileManager(String directory){
+    FileManager(String directory) {
         this.baseDirectory = Path.of(directory);
     }
 
@@ -15,4 +15,26 @@ public class FileManager {
         return Files.list(baseDirectory).map(Path::getFileName).map(Path::toString).collect(Collectors.toList());
     }
 
+    public String readFile(String fileName) throws IOException {
+        Path filePath = baseDirectory.resolve(fileName);
+        validatePath(filePath);
+        return new String(Files.readAllBytes(filePath));
+    }
+
+    public void writeFile(String fileName, String content) throws IOException {
+        Path filePath = baseDirectory.resolve(fileName);
+        validatePath(filePath);
+        Files.write(filePath, content.getBytes());
+    }
+
+    public boolean fileExists(String fileName) {
+        Path filePath = baseDirectory.resolve(fileName);
+        return Files.exists(filePath);
+    }
+
+    private void validatePath(Path filePath) {
+        if (!filePath.normalize().startsWith(baseDirectory)) {
+            throw new SecurityException("Attempt to access file outside of base directory");
+        }
+    }
 }
