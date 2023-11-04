@@ -7,14 +7,13 @@ public class httpfs {
     public static void main(String[] args) {
         LOGGER.setLevel(Level.WARNING); // Default Level is WARNING, so we don't debug by default
 
-        String line = "-v -p 8080 -d thedirectorypath";
+        String line = "-v -p 8080 -d /Users/aryansaxena/Desktop/CN/LA2/data";
         String[] args2 = line.split(" ");
         try {
             ServerConfig config = new ServerConfig(args2);
             if (config.isDebugging()) {
                 LOGGER.setLevel(Level.FINE);
             }
-            // This is where we start the server
             HttpServer server = new HttpServer(config);
             server.start();
         } catch (IllegalArgumentException e) {

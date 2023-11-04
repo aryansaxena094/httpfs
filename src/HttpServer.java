@@ -20,7 +20,7 @@ public class HttpServer {
 
     public void start() {
         try (ServerSocket serverSocket = new ServerSocket(config.getPort())) {
-            LOGGER.info("Server started");
+            LOGGER.info("Server started on port: " + config.getPort());
             while (true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
