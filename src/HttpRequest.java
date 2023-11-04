@@ -4,6 +4,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class HttpRequest {
     private String method;
@@ -14,8 +16,7 @@ public class HttpRequest {
     private Map<String, String> query;
     private String cookies;
     private String authenticationInfo;
-    private String filePath;
-
+    private final static Logger LOGGER = Logger.getLogger(httpfs.class.getName());
 
     public HttpRequest() {
         this.headers = new HashMap<>();
@@ -98,11 +99,6 @@ public class HttpRequest {
             return null;
         }
     }
-    
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
 
     public void setInlineData(String inlineData) {
         this.body = inlineData;
@@ -176,13 +172,20 @@ public class HttpRequest {
 
     public static HttpRequest parse(BufferedReader reader) throws IOException {
         HttpRequest request = new HttpRequest();
-        String line = reader.readLine();
+        String line;
     
-        if (line == null || line.trim().isEmpty()) {
-            throw new IOException("Request line is empty");
+        // Skip any empty lines to account for clients that send initial empty requests
+        while (true) {
+            line = reader.readLine();
+            if (line == null) { // Client closed the connection
+                return null; // Or throw an exception if you want to handle this scenario differently
+            }
+            if (!line.trim().isEmpty()) {
+                break; // Found a non-empty line, proceed with parsing
+            }
         }
     
-        // Parse the request line
+        // Now we have a non-empty line, we can parse the request line
         String[] requestLineParts = line.trim().split("\\s+");
         if (requestLineParts.length < 3) {
             throw new IOException("Invalid request line");
@@ -216,10 +219,10 @@ public class HttpRequest {
         }
     
         // Extract query params if any
-        // This requires an implementation for extracting query params from the URL
         request.extractQueryParams();
     
         return request;
     }
     
+
 }

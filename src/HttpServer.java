@@ -2,20 +2,15 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 public class HttpServer {
     private final ServerConfig config;
     private final FileManager fileManager;
-    private final Logger LOGGER = Logger.getLogger(HttpServer.class.getName());
+    private final Logger LOGGER = Logger.getLogger(httpfs.class.getName());
 
     public HttpServer(ServerConfig config) {
         this.config = config;
         this.fileManager = new FileManager(config.getDirectory());
-        LOGGER.setLevel(Level.WARNING);
-        if (config.isDebugging()) {
-            LOGGER.setLevel(Level.FINE);
-        }
     }
 
     public void start() {
@@ -24,8 +19,8 @@ public class HttpServer {
             while (true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    LOGGER.fine("New connection accepted");
-                    Thread thread = new Thread(new RequestHandler(clientSocket, fileManager, config.isDebugging()));
+                    LOGGER.info("New connection accepted");
+                    Thread thread = new Thread(new RequestHandler(clientSocket, fileManager));
                     thread.start();
                 } catch (Exception e) {
                     // This is where we handle client errors

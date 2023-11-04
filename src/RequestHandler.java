@@ -1,22 +1,15 @@
 import java.io.*;
 import java.net.Socket;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RequestHandler implements Runnable {
-    private final boolean isDebugging;
     private final Socket clientSocket;
     private final FileManager fileManager;
-    private final Logger LOGGER = Logger.getLogger(RequestHandler.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(httpfs.class.getName());
 
-    public RequestHandler(Socket clientSocket, FileManager fileManager, boolean isDebugging) {
+    public RequestHandler(Socket clientSocket, FileManager fileManager) {
         this.clientSocket = clientSocket;
         this.fileManager = fileManager;
-        this.isDebugging = isDebugging;
-        LOGGER.setLevel(Level.WARNING);
-        if (isDebugging) {
-            LOGGER.setLevel(Level.FINE);
-        }
     }
 
     public void run() {
@@ -25,16 +18,14 @@ public class RequestHandler implements Runnable {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(input));
                 OutputStream output = clientSocket.getOutputStream();
                 PrintWriter writer = new PrintWriter(output, true)) {
-                    
-            HttpRequest request = HttpRequest.parse(reader);
-            HttpResponse response = new HttpResponse();
-            LOGGER.fine("URL: " + request.getURL());
-            LOGGER.fine("FilePath: " + request.getFilePath());
 
-            // Debugging info
-            if (isDebugging) {
-                LOGGER.fine("Request: " + request.toHttpRequestString());
+            HttpRequest request = HttpRequest.parse(reader);
+            if (request == null) {
+                LOGGER.info("Received an empty request or client closed the connection.");
+                return;
             }
+            LOGGER.info("Received request: " + request.toHttpRequestString());
+            HttpResponse response = new HttpResponse();
 
             // Determine the request type (GET, POST, etc.)
             switch (request.getMethod()) {
@@ -50,9 +41,10 @@ public class RequestHandler implements Runnable {
                     response.setStatusCode(501);
                     response.setReasonPhrase("Not Implemented");
                     response.setBody("Method not implemented");
+                    LOGGER.warning("Received a request for an unimplemented method: " + request.getMethod());
                     break;
             }
-
+            LOGGER.info("Sending response: " + response.toHttpString());
             // Send the appropriate HTTP response back to the client
             sendResponse(writer, response);
 
@@ -61,6 +53,7 @@ public class RequestHandler implements Runnable {
         } finally {
             try {
                 clientSocket.close();
+                LOGGER.info("Client socket closed successfully.");
             } catch (IOException e) {
                 LOGGER.warning("Error closing client socket: " + e.getMessage());
             }
@@ -75,11 +68,13 @@ public class RequestHandler implements Runnable {
             response.setStatusCode(200);
             response.setReasonPhrase("OK");
             response.setBody(fileContent);
+            LOGGER.info("File " + fileName + " read successfully for GET request.");
         } else {
             response.setHttpVersion(request.getHttpVersion());
             response.setStatusCode(404);
             response.setReasonPhrase("Not Found");
             response.setBody("File not found");
+            LOGGER.warning("File " + fileName + " not found for GET request.");
         }
     }
 
@@ -87,6 +82,7 @@ public class RequestHandler implements Runnable {
         String fileName = request.getFilePath();
         String content = request.getBody();
         fileManager.writeFile(fileName, content);
+        LOGGER.info("File " + fileName + " written successfully for POST request.");
         response.setHttpVersion(request.getHttpVersion());
         response.setStatusCode(201);
         response.setReasonPhrase("Created");
