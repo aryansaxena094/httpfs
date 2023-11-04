@@ -55,4 +55,26 @@ class HttpResponse {
     public String getRedirectLocation() {
         return headers.get("Location");
     }
+
+    public String toHttpString() {
+        StringBuilder responseBuilder = new StringBuilder();
+
+        // Start line
+        responseBuilder.append(this.HttpVersion).append(" ").append(this.statusCode).append(" ").append(this.reasonPhrase).append("\r\n");
+
+        // Headers
+        for (String header : this.headers.keySet()) {
+            responseBuilder.append(header).append(": ").append(this.headers.get(header)).append("\r\n");
+        }
+
+        // Separator between headers and the body
+        responseBuilder.append("\r\n");
+
+        // Body
+        if (this.body != null && !this.body.isEmpty()) {
+            responseBuilder.append(this.body);
+        }
+
+        return responseBuilder.toString();
+    }
 }

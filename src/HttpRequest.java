@@ -1,3 +1,5 @@
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -89,8 +91,14 @@ public class HttpRequest {
     }
 
     public String getFilePath() {
-        return filePath;
+        try {
+            URI uri = new URI(this.URL);
+            return uri.getPath().substring(1); // This removes the leading '/' from the path
+        } catch (URISyntaxException e) {
+            return null;
+        }
     }
+    
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
@@ -165,4 +173,53 @@ public class HttpRequest {
         sb.append("\r\n\r\n");
         return sb.toString();
     }
+
+    public static HttpRequest parse(BufferedReader reader) throws IOException {
+        HttpRequest request = new HttpRequest();
+        String line = reader.readLine();
+    
+        if (line == null || line.trim().isEmpty()) {
+            throw new IOException("Request line is empty");
+        }
+    
+        // Parse the request line
+        String[] requestLineParts = line.trim().split("\\s+");
+        if (requestLineParts.length < 3) {
+            throw new IOException("Invalid request line");
+        }
+        request.method = requestLineParts[0];
+        request.URL = requestLineParts[1];
+        request.HttpVersion = requestLineParts[2];
+    
+        // Parse the headers
+        while ((line = reader.readLine()) != null && !line.trim().isEmpty()) {
+            String[] headerParts = line.split(":", 2);
+            if (headerParts.length < 2) {
+                throw new IOException("Invalid header line");
+            }
+            request.headers.put(headerParts[0].trim(), headerParts[1].trim());
+        }
+    
+        // If POST, handle the body
+        if ("POST".equalsIgnoreCase(request.method) && request.headers.containsKey("Content-Length")) {
+            int contentLength = Integer.parseInt(request.headers.get("Content-Length"));
+            char[] bodyChars = new char[contentLength];
+            int bytesRead = 0;
+            while (bytesRead < contentLength) {
+                int read = reader.read(bodyChars, bytesRead, contentLength - bytesRead);
+                if (read == -1) { // End of stream
+                    throw new IOException("Not enough data received for Content-Length");
+                }
+                bytesRead += read;
+            }
+            request.body = new String(bodyChars);
+        }
+    
+        // Extract query params if any
+        // This requires an implementation for extracting query params from the URL
+        request.extractQueryParams();
+    
+        return request;
+    }
+    
 }
