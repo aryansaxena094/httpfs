@@ -1,5 +1,7 @@
 import java.io.*;
+import java.net.FileNameMap;
 import java.net.Socket;
+import java.net.URLConnection;
 import java.util.logging.Logger;
 
 public class RequestHandler implements Runnable {
@@ -71,6 +73,12 @@ public class RequestHandler implements Runnable {
         String fileName = request.getFilePath();
         if (fileManager.fileExists(fileName)) {
             String fileContent = fileManager.readFile(fileName);
+            String mimeType = getMimeType(fileName);
+            String contentDisposition = getContentDisposition(fileName, mimeType);
+    
+            response.headers.put("Content-Type", mimeType);
+        response.headers.put("Content-Disposition", contentDisposition);
+
             response.setHttpVersion(request.getHttpVersion());
             response.setStatusCode(200);
             response.setReasonPhrase("OK");
@@ -85,6 +93,25 @@ public class RequestHandler implements Runnable {
         }
     }
 
+    private String getMimeType(String fileName) {
+    FileNameMap fileNameMap = URLConnection.getFileNameMap();
+    String mimeType = fileNameMap.getContentTypeFor(fileName);
+    if (mimeType == null) {
+        mimeType = "application/octet-stream"; // Fallback MIME type
+    }
+    return mimeType;
+}
+private String getContentDisposition(String fileName, String mimeType) {
+    // If the MIME type is for a commonly inline-displayed type, you might choose inline
+    // This is a simple heuristic and might be expanded based on your needs
+    if (mimeType.startsWith("image/") || mimeType.equals("application/pdf")) {
+        return "inline; filename=\"" + fileName + "\"";
+    } else {
+        return "attachment; filename=\"" + fileName + "\"";
+    }
+}
+
+
     private void handlePostRequest(HttpRequest request, HttpResponse response) throws IOException {
         String fileName = request.getFilePath();
         String content = request.getBody();
@@ -97,7 +124,6 @@ public class RequestHandler implements Runnable {
     }
 
     private void sendResponse(PrintWriter writer, HttpResponse response) {
-        // LOGGER.info("Sending response, status code: " + response.getStatusCode() + ", reason phrase: " + response.getReasonPhrase());
         writer.println(response.toHttpString());
         writer.flush();
     }
