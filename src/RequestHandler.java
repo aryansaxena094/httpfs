@@ -21,22 +21,24 @@ public class RequestHandler implements Runnable {
 
             HttpRequest request = HttpRequest.parse(reader);
             if (request == null) {
-                LOGGER.info("Received an empty request or client closed the connection.");
+                LOGGER.info("Received an empty request or client opened the connection.");
                 return;
             }
-            LOGGER.info("Received request: " + request.toHttpRequestString());
             HttpResponse response = new HttpResponse();
 
             // Determine the request type (GET, POST, etc.)
             switch (request.getMethod()) {
                 case "GET":
+                    LOGGER.info("Received a GET request.");
                     handleGetRequest(request, response);
                     break;
                 case "POST":
+                LOGGER.info("Received a POST request.");
                     handlePostRequest(request, response);
                     break;
                 // Add cases for other HTTP methods if needed
                 default:
+                LOGGER.info("Received a request for an unimplemented method: " + request.getMethod());
                     response.setHttpVersion(request.getHttpVersion());
                     response.setStatusCode(501);
                     response.setReasonPhrase("Not Implemented");
@@ -90,6 +92,7 @@ public class RequestHandler implements Runnable {
     }
 
     private void sendResponse(PrintWriter writer, HttpResponse response) {
+        // LOGGER.info("Sending response, status code: " + response.getStatusCode() + ", reason phrase: " + response.getReasonPhrase());
         writer.println(response.toHttpString());
         writer.flush();
     }
