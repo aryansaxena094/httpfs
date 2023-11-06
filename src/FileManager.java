@@ -11,23 +11,23 @@ public class FileManager {
         this.baseDirectory = Path.of(directory);
     }
 
-    public List<String> listFiles() throws IOException {
+    public synchronized List<String> listFiles() throws IOException {
         return Files.list(baseDirectory).map(Path::getFileName).map(Path::toString).collect(Collectors.toList());
     }
 
-    public String readFile(String fileName) throws IOException {
+    public synchronized String readFile(String fileName) throws IOException {
         Path filePath = baseDirectory.resolve(fileName);
         validatePath(filePath);
         return new String(Files.readAllBytes(filePath));
     }
 
-    public void writeFile(String fileName, String content) throws IOException {
+    public synchronized void writeFile(String fileName, String content) throws IOException {
         Path filePath = baseDirectory.resolve(fileName);
         validatePath(filePath);
         Files.write(filePath, content.getBytes());
     }
 
-    public boolean fileExists(String fileName) {
+    public synchronized boolean fileExists(String fileName) {
         Path filePath = baseDirectory.resolve(fileName);
         return Files.exists(filePath);
     }

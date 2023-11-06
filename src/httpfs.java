@@ -1,3 +1,4 @@
+import java.util.Date;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -15,13 +16,14 @@ public class httpfs {
         consoleHandler.setFormatter(new Formatter() {
             @Override
             public String format(LogRecord record) {
-                return record.getMessage() + "\n";
+                return String.format("[%1$tF %1$tT] [%2$-7s] %3$s%n", new Date(record.getMillis()),
+                record.getLevel().getLocalizedName(), record.getMessage().trim());
             }
         });
         LOGGER.addHandler(consoleHandler);
         LOGGER.setUseParentHandlers(false);
 
-        String line = "-p 8080 -d /Users/aryansaxena/Desktop/CN/LA2/data";
+        String line = "-v -p 8080 -d /Users/aryansaxena/Desktop/CN/LA2/data";
         String[] args2 = line.split(" ");
         try {
             ServerConfig config = new ServerConfig(args2);

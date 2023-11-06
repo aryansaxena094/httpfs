@@ -1,3 +1,0 @@
-{
-    "Hatt Bhenchod":"Hatt"
-}

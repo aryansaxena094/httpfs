@@ -1,3 +1,5 @@
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Logger;
 
 public class ServerConfig {
@@ -11,28 +13,39 @@ public class ServerConfig {
     }
 
     private void parseArguments(String[] args) throws IllegalArgumentException {
+        boolean portSet = false, directorySet = false;
 
         for (int i = 0; i < args.length; i++) {
             try {
                 switch (args[i]) {
                     case "-v":
-                        LOGGER.info("Debugging enabled");
                         debugging = true;
                         break;
                     case "-p":
-                        // Check if a port number is provided and if it's a valid integer
+                        if (portSet) {
+                            throw new IllegalArgumentException("Port number already set to: " + port);
+                        }
                         if (i + 1 < args.length) {
-                            LOGGER.info("Using port number: " + args[i + 1]);
-                            port = Integer.parseInt(args[++i]);
+                            int parsedPort = Integer.parseInt(args[++i]);
+                            if (parsedPort < 1024 || parsedPort > 65535) {
+                                throw new IllegalArgumentException("Port number out of range: " + parsedPort);
+                            }
+                            port = parsedPort;
+                            portSet = true;
                         } else {
                             throw new IllegalArgumentException("No port number provided after -p");
                         }
                         break;
                     case "-d":
-                        // Check if a directory path is provided
                         if (i + 1 < args.length) {
-                            LOGGER.info("Using directory: " + args[i + 1]);
                             directory = args[++i];
+                            Path dirPath = Path.of(directory);
+                            if (!Files.isDirectory(dirPath)) {
+                                throw new IllegalArgumentException("Provided path is not a directory: " + directory);
+                            }
+                            if (!Files.isWritable(dirPath)) {
+                                throw new IllegalArgumentException("Provided directory is not writable: " + directory);
+                            }
                         } else {
                             throw new IllegalArgumentException("No directory provided after -d");
                         }
@@ -43,6 +56,10 @@ public class ServerConfig {
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Invalid port number: " + args[i], e);
             }
+        }
+
+        if (debugging) {
+            LOGGER.info("Debugging enabled. Port: " + port + ". Directory: " + directory);
         }
     }
 

@@ -4,7 +4,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HttpRequest {
@@ -139,7 +138,7 @@ public class HttpRequest {
                 }
             }
         } catch (URISyntaxException e) {
-            System.out.println("Error in handling Parameters");
+            LOGGER.severe("Error in handling Parameters");
         }
     }
 
@@ -155,7 +154,7 @@ public class HttpRequest {
             }
             sb.append(" ").append(getHttpVersion()).append("\r\n");
         } catch (URISyntaxException e) {
-            System.out.println("Invalid URL");
+            LOGGER.severe("Invalid URL");
             return null;
         }
         sb.append("Host: ").append(getHost()).append("\r\n");

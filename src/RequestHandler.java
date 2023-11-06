@@ -13,15 +13,18 @@ public class RequestHandler implements Runnable {
     }
 
     public void run() {
+        String clientIP = clientSocket.getInetAddress().getHostAddress();
+        LOGGER.info("Client connected: "+ clientIP);
         try (
                 InputStream input = clientSocket.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(input));
                 OutputStream output = clientSocket.getOutputStream();
                 PrintWriter writer = new PrintWriter(output, true)) {
-
+                    
+                    
             HttpRequest request = HttpRequest.parse(reader);
             if (request == null) {
-                LOGGER.info("Received an empty request or client opened the connection.");
+                LOGGER.warning(clientIP + " - Received an empty request or client opened the connection.");
                 return;
             }
             HttpResponse response = new HttpResponse();
@@ -29,38 +32,40 @@ public class RequestHandler implements Runnable {
             // Determine the request type (GET, POST, etc.)
             switch (request.getMethod()) {
                 case "GET":
-                    LOGGER.info("Received a GET request.");
                     handleGetRequest(request, response);
                     break;
                 case "POST":
-                LOGGER.info("Received a POST request.");
                     handlePostRequest(request, response);
                     break;
                 // Add cases for other HTTP methods if needed
                 default:
-                LOGGER.info("Received a request for an unimplemented method: " + request.getMethod());
-                    response.setHttpVersion(request.getHttpVersion());
-                    response.setStatusCode(501);
-                    response.setReasonPhrase("Not Implemented");
-                    response.setBody("Method not implemented");
-                    LOGGER.warning("Received a request for an unimplemented method: " + request.getMethod());
+                handleUnsupportedMethod(request, response, clientIP);
                     break;
             }
-            LOGGER.info("Sending response: " + response.toHttpString());
+            LOGGER.info(clientIP + " - " + request.getMethod() + " response: " + response.getStatusCode() + " " + response.getReasonPhrase());
             // Send the appropriate HTTP response back to the client
             sendResponse(writer, response);
 
         } catch (Exception e) {
-            LOGGER.severe("Error processing request: " + e.getMessage());
+            LOGGER.severe(clientIP + " - Error processing request: " + e.getMessage());
         } finally {
             try {
                 clientSocket.close();
-                LOGGER.info("Client socket closed successfully.");
+                LOGGER.fine(clientIP + " - Client socket closed successfully.");
             } catch (IOException e) {
-                LOGGER.warning("Error closing client socket: " + e.getMessage());
+                LOGGER.warning(clientIP + " - Error closing client socket: " + e.getMessage());
             }
         }
     }
+
+    private void handleUnsupportedMethod(HttpRequest request, HttpResponse response, String clientIP) {
+        response.setHttpVersion(request.getHttpVersion());
+        response.setStatusCode(501);
+        response.setReasonPhrase("Not Implemented");
+        response.setBody("Method not implemented");
+        LOGGER.warning(clientIP + " - Received a request for an unimplemented method: " + request.getMethod());
+    }
+
 
     private void handleGetRequest(HttpRequest request, HttpResponse response) throws IOException {
         String fileName = request.getFilePath();
