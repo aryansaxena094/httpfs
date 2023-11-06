@@ -1,4 +1,41 @@
-TESTING:
+Commands.txt
+-------------------------------------------------------------------------------
 
-        // Scanner sc = new Scanner(System.in);
-        // String line = sc.nextLine();
+TESTING SETUP
+Manual input for testing:
+Copy the desired command line arguments below and paste them when prompted during the testing session.
+
+-v -p 8080 -d /Users/aryansaxena/Desktop/CN/LA2/data
+-v -p 9090 -d /Users/aryansaxena/Desktop/CN/LA2/data
+-p 80 -d /Users/aryansaxena/Desktop/CN/LA2/data
+
+-------------------------------------------------------------------------------
+
+JAR EXECUTION COMMANDS
+Use these commands to launch the httpfs server directly from the terminal.
+
+Start server with verbose output on port 8080:
+java --enable-preview -jar httpfs.jar -v -p 8080 -d /Users/aryansaxena/Desktop/CN/LA2/data
+
+Start server on port 80 (HTTP default):
+java --enable-preview -jar httpfs.jar -p 80 -d /Users/aryansaxena/Desktop/CN/LA2/data
+
+Start server without verbose output on port 8080:
+java --enable-preview -jar httpfs.jar -p 8080 -d /Users/aryansaxena/Desktop/CN/LA2/data
+
+Start server with verbose output on port 9090:
+java --enable-preview -jar httpfs.jar -v -p 9090 -d /Users/aryansaxena/Desktop/CN/LA2/data
+
+Additional Commands with different scenarios:
+Start server without any flags, default port will be used:
+java --enable-preview -jar httpfs.jar -d /Users/aryansaxena/Desktop/CN/LA2/data
+
+Start server with verbose flag, no port specified:
+java --enable-preview -jar httpfs.jar -v -d /Users/aryansaxena/Desktop/CN/LA2/data
+
+Notes:
+-v : Enable verbose logging
+-p : Specify the server port (default is 8080 if not provided)
+-d : Set the directory for storing files
+
+Remember to use the correct path to your 'httpfs.jar' if not running commands from the jar's directory.

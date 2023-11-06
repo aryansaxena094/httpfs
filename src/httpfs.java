@@ -10,23 +10,9 @@ public class httpfs {
     private static final Logger LOGGER = Logger.getLogger(httpfs.class.getName());
 
     public static void main(String[] args) {
-        LOGGER.setLevel(Level.WARNING);
-
-        Handler consoleHandler = new ConsoleHandler();
-        consoleHandler.setFormatter(new Formatter() {
-            @Override
-            public String format(LogRecord record) {
-                return String.format("[%1$tF %1$tT] [%2$-7s] %3$s%n", new Date(record.getMillis()),
-                record.getLevel().getLocalizedName(), record.getMessage().trim());
-            }
-        });
-        LOGGER.addHandler(consoleHandler);
-        LOGGER.setUseParentHandlers(false);
-
-        String line = "-v -p 8080 -d /Users/aryansaxena/Desktop/CN/LA2/data";
-        String[] args2 = line.split(" ");
+        formattingLog();
         try {
-            ServerConfig config = new ServerConfig(args2);
+            ServerConfig config = new ServerConfig(args);
             if (config.isDebugging()) {
                 LOGGER.setLevel(Level.FINE);
                 LOGGER.info("Debugging has been enabled");
@@ -36,5 +22,19 @@ public class httpfs {
         } catch (IllegalArgumentException e) {
             LOGGER.severe("Error parsing arguments: " + e.getMessage());
         }
+    }
+
+    public static void formattingLog() {
+        LOGGER.setLevel(Level.WARNING);
+        Handler consoleHandler = new ConsoleHandler();
+        consoleHandler.setFormatter(new Formatter() {
+            @Override
+            public String format(LogRecord record) {
+                return String.format("[%1$tF %1$tT] [%2$-7s] %3$s%n", new Date(record.getMillis()),
+                        record.getLevel().getLocalizedName(), record.getMessage().trim());
+            }
+        });
+        LOGGER.addHandler(consoleHandler);
+        LOGGER.setUseParentHandlers(false);
     }
 }
