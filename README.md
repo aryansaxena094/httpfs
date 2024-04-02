@@ -1,4 +1,4 @@
-# Simple HTTP File Server
+# HTTP File Server
 
 This is a simple HTTP file server that allows for basic file operations over the HTTP protocol. It has the capability to list, read, and write files to a specified directory on the server.
 
